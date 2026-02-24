@@ -10,17 +10,28 @@ public class HelloController {
     public Mode curMode = Mode.Pencil; //Default to pencil mode
     @FXML
     private Canvas canvas;
-
+    GraphicsContext gc;
     @FXML
     public void initialize() {
-        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc = canvas.getGraphicsContext2D();
+
+        canvas.setOnMousePressed(e -> {
+            gc.beginPath();
+            gc.moveTo(e.getX(), e.getY());
+        });
 
         canvas.setOnMouseDragged(e -> {
-            if (curMode == Mode.Pencil) {
-                gc.lineTo(e.getX(), e.getY());
-                gc.stroke();
-            } else if (curMode == Mode.Eraser) {
-                gc.clearRect(e.getX() - 5, e.getY() - 5, 10, 10);
+            switch (curMode) {
+                case Pencil -> {
+                    gc.lineTo(e.getX(), e.getY());
+                    gc.stroke();
+                }
+                case Eraser -> {
+                    gc.clearRect(e.getX() - 5, e.getY() - 5, 20, 20);
+                }
+                case Fill -> {
+                    // fill logic later
+                }
             }
         });
     }
@@ -35,5 +46,11 @@ public class HelloController {
     public void selectEraser(){
         curMode = Mode.Eraser;
         System.out.println("Current Mode: Eraser");
+    }
+
+    @FXML
+    public void selectFill(){
+        curMode = Mode.Fill;
+        System.out.println("Current Mode: Fill");
     }
 }

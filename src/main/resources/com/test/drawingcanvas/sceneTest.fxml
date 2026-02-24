@@ -39,7 +39,7 @@
         <items>
           <Button fx:id="pencil" alignment="TOP_CENTER" mnemonicParsing="false" text="Pencil" onAction="#selectPencil"/>
             <Button fx:id="eraser" mnemonicParsing="false" text="Eraser" onAction="#selectEraser"/>
-            <Button fx:id="fill" mnemonicParsing="false" text="Fill" />
+            <Button fx:id="fill" mnemonicParsing="false" text="Fill" onAction="#selectFill"/>
         </items>
       </ToolBar>
    </left>

@@ -5,25 +5,35 @@ import javafx.fxml.FXML;
  import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
 
+
 public class HelloController {
+    public Mode curMode = Mode.Pencil; //Default to pencil mode
     @FXML
     private Canvas canvas;
-    private GraphicsContext gc;
-
-
 
     @FXML
     public void initialize() {
-        gc = canvas.getGraphicsContext2D();
+        GraphicsContext gc = canvas.getGraphicsContext2D();
 
         canvas.setOnMouseDragged(e -> {
-            GraphicsContext gc = canvas.getGraphicsContext2D();
-            gc.lineTo(e.getX(), e.getY());
-            gc.stroke();
+            if (curMode == Mode.Pencil) {
+                gc.lineTo(e.getX(), e.getY());
+                gc.stroke();
+            } else if (curMode == Mode.Eraser) {
+                gc.clearRect(e.getX() - 5, e.getY() - 5, 10, 10);
+            }
         });
     }
+
     @FXML
     public void selectPencil(){
-        System.out.println("Pencil Selected");
+        curMode = Mode.Pencil;
+        System.out.println("Current Mode: Pencil");
+    }
+
+    @FXML
+    public void selectEraser(){
+        curMode = Mode.Eraser;
+        System.out.println("Current Mode: Eraser");
     }
 }

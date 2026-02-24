@@ -38,7 +38,7 @@
       <ToolBar orientation="VERTICAL" pickOnBounds="false" prefHeight="378.0" prefWidth="47.0" BorderPane.alignment="CENTER">
         <items>
           <Button fx:id="pencil" alignment="TOP_CENTER" mnemonicParsing="false" text="Pencil" onAction="#selectPencil"/>
-            <Button fx:id="eraser" mnemonicParsing="false" text="Eraser" />
+            <Button fx:id="eraser" mnemonicParsing="false" text="Eraser" onAction="#selectEraser"/>
             <Button fx:id="fill" mnemonicParsing="false" text="Fill" />
         </items>
       </ToolBar>

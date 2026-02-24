@@ -8,8 +8,7 @@
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.BorderPane?>
 
-
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.test.drawingcanvas.HelloController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0"  xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.test.drawingcanvas.HelloController">
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
@@ -37,9 +36,10 @@
    <left>
       <ToolBar orientation="VERTICAL" pickOnBounds="false" prefHeight="378.0" prefWidth="47.0" BorderPane.alignment="CENTER">
         <items>
-          <Button fx:id="pencil" alignment="TOP_CENTER" mnemonicParsing="false" text="Pencil" onAction="#selectPencil"/>
+          <Button fx:id="pencil" alignment="TOP_CENTER" mnemonicParsing="false" onAction="#selectPencil" text="Pencil" />
             <Button fx:id="eraser" mnemonicParsing="false" text="Eraser" onAction="#selectEraser"/>
             <Button fx:id="fill" mnemonicParsing="false" text="Fill" onAction="#selectFill"/>
+            <Button fx:id="clear" mnemonicParsing="false" text="Clear" onAction="#selectClear"/>
         </items>
       </ToolBar>
    </left>

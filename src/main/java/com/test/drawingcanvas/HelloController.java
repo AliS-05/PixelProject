@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
  import javafx.scene.canvas.GraphicsContext;
  import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
+import javafx.scene.paint.Color;
 
 
 public class HelloController {
@@ -32,6 +33,7 @@ public class HelloController {
                 case Fill -> {
                     // fill logic later
                 }
+
             }
         });
     }
@@ -52,5 +54,12 @@ public class HelloController {
     public void selectFill(){
         curMode = Mode.Fill;
         System.out.println("Current Mode: Fill");
+    }
+
+    @FXML
+    public void selectClear(){
+        gc.setFill(Color.WHITE);
+        gc.fillRect(0,0, canvas.getWidth(), canvas.getHeight());
+        System.out.println("Current Mode: Clear");
     }
 }

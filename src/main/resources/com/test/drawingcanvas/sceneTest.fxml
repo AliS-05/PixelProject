@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ColorPicker?>
 <?import javafx.scene.control.Menu?>
@@ -8,6 +7,9 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.test.drawingcanvas.HelloController">
    <top>
@@ -31,18 +33,28 @@
         </menus>
       </MenuBar>
    </top>
-   <center>
-      <Canvas fx:id="canvas" height="375.0" width="550.0" BorderPane.alignment="CENTER" />
-   </center>
    <left>
       <ToolBar orientation="VERTICAL" pickOnBounds="false" prefHeight="378.0" prefWidth="47.0" BorderPane.alignment="CENTER">
         <items>
             <ColorPicker fx:id="colorPicker" />
           <Button fx:id="pencil" alignment="TOP_CENTER" mnemonicParsing="false" onAction="#selectPencil" text="Pencil" />
-            <Button fx:id="eraser" mnemonicParsing="false" text="Eraser" onAction="#selectEraser"/>
-            <Button fx:id="fill" mnemonicParsing="false" text="Fill" onAction="#selectFill"/>
-            <Button fx:id="clear" mnemonicParsing="false" text="Clear" onAction="#selectClear"/>
+            <Button fx:id="eraser" mnemonicParsing="false" onAction="#selectEraser" text="Eraser" />
+            <Button fx:id="fill" mnemonicParsing="false" onAction="#selectFill" text="Fill" />
+            <Button fx:id="clear" mnemonicParsing="false" onAction="#selectClear" text="Clear" />
         </items>
       </ToolBar>
    </left>
+   <center>
+      <GridPane fx:id="grid" prefHeight="378.0" prefWidth="410.0" BorderPane.alignment="CENTER">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+      </GridPane>
+   </center>
 </BorderPane>

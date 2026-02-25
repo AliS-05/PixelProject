@@ -1,79 +1,90 @@
 package com.test.drawingcanvas;
 
 import javafx.fxml.FXML;
- import javafx.scene.canvas.GraphicsContext;
- import javafx.scene.canvas.Canvas;
 import javafx.scene.control.ColorPicker;
-import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
-
+import javafx.scene.shape.Rectangle;
 
 public class HelloController {
-    private Color curColor = Color.BLACK; // default to black pencil on white canvas
-    private Mode curMode = Mode.Pencil; //Default to pencil mode
+
+    private static final int ROWS = 32;
+    private static final int COLS = 32;
+    private static final int CELL_SIZE = 20;
+
+    private Color curColor = Color.BLACK;
+    private Mode curMode = Mode.Pencil;
+
+    @FXML
+    private GridPane grid;
+
     @FXML
     private ColorPicker colorPicker;
 
-    @FXML
-    private Canvas canvas;
-    GraphicsContext gc;
+    private Rectangle[][] pixels;
 
     @FXML
     public void initialize() {
-        gc = canvas.getGraphicsContext2D();
-        gc.setStroke(curColor);
 
-        colorPicker.setOnAction(e -> {
-            curColor = colorPicker.getValue();
-            gc.setStroke(curColor);
-            System.out.println("Current Color: " + curColor);
-        });
+        pixels = new Rectangle[ROWS][COLS];
 
-        canvas.setOnMousePressed(e -> {
-            gc.beginPath();
-            gc.moveTo(e.getX(), e.getY());
-        });
+        colorPicker.setValue(curColor);
+        colorPicker.setOnAction(e -> curColor = colorPicker.getValue());
 
-        canvas.setOnMouseDragged(e -> {
-            switch (curMode) {
-                case Pencil -> {
-                    gc.lineTo(e.getX(), e.getY());
-                    gc.stroke();
-                }
-                case Eraser -> {
-                    gc.clearRect(e.getX() - 5, e.getY() - 5, 20, 20);
-                }
-                case Fill -> {
-                    // fill logic later
-                }
+        for (int row = 0; row < ROWS; row++) {
+            for (int col = 0; col < COLS; col++) {
+
+                Rectangle cell = new Rectangle(CELL_SIZE, CELL_SIZE);
+                cell.setFill(Color.WHITE);
+                cell.setStroke(Color.LIGHTGRAY);
+
+                int r = row;
+                int c = col;
+
+                cell.setOnMousePressed(e -> applyTool(r, c));
+                cell.setOnMouseDragged(e -> applyTool(r, c));
+
+                pixels[row][col] = cell;
+                grid.add(cell, col, row);
             }
-        });
+        }
     }
 
+    private void applyTool(int row, int col) {
 
+        switch (curMode) {
+
+            case Pencil -> pixels[row][col].setFill(curColor);
+
+            case Eraser -> pixels[row][col].setFill(Color.WHITE);
+
+            case Fill -> {
+                // flood fill logic can go here later
+            }
+        }
+    }
 
     @FXML
-    public void selectPencil(){
+    public void selectPencil() {
         curMode = Mode.Pencil;
-        System.out.println("Current Mode: Pencil");
     }
 
     @FXML
-    public void selectEraser(){
+    public void selectEraser() {
         curMode = Mode.Eraser;
-        System.out.println("Current Mode: Eraser");
     }
 
     @FXML
-    public void selectFill(){
+    public void selectFill() {
         curMode = Mode.Fill;
-        System.out.println("Current Mode: Fill");
     }
 
     @FXML
-    public void selectClear(){
-        gc.setFill(Color.WHITE);
-        gc.fillRect(0,0, canvas.getWidth(), canvas.getHeight());
-        System.out.println("Current Mode: Clear");
+    public void selectClear() {
+        for (int row = 0; row < ROWS; row++) {
+            for (int col = 0; col < COLS; col++) {
+                pixels[row][col].setFill(Color.WHITE);
+            }
+        }
     }
 }

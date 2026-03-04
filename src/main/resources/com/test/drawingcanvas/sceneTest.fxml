@@ -7,9 +7,7 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.RowConstraints?>
 
 <BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.test.drawingcanvas.HelloController">
    <top>
@@ -41,10 +39,12 @@
             <Button fx:id="eraser" mnemonicParsing="false" onAction="#selectEraser" text="Eraser" />
             <Button fx:id="fill" mnemonicParsing="false" onAction="#selectFill" text="Fill" />
             <Button fx:id="clear" mnemonicParsing="false" onAction="#selectClear" text="Clear" />
+            <Button fx:id="undo" mnemonicParsing="false" onAction="#selectUndo" text="Undo" />
+            <Button fx:id="redo" mnemonicParsing="false" onAction="#selectRedo" text="Redo" />
         </items>
       </ToolBar>
    </left>
    <center>
-       <GridPane fx:id="grid" BorderPane.alignment="CENTER"/>
+       <GridPane fx:id="grid" BorderPane.alignment="CENTER" />
    </center>
 </BorderPane>

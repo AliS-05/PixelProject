@@ -4,5 +4,5 @@ public enum Mode {
     Pencil,
     Eraser,
     Fill,
-    Clear
+    Clear,
 }

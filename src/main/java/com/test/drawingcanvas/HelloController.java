@@ -7,10 +7,18 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 public class HelloController {
 
     private static final int ROWS = 16;
     private static final int COLS = 16;
+
+    // source of truth grid
+    private Color[][] canvasData = new Color[ROWS][COLS];
+    private Deque<Operation> undoStack = new ArrayDeque<>();
+    private Deque<Operation> redoStack = new ArrayDeque<>();
 
     private Color curColor = Color.BLACK;
     private Mode curMode = Mode.Pencil;
@@ -25,6 +33,9 @@ public class HelloController {
 
     @FXML
     public void initialize() {
+        for (int r = 0; r < ROWS; r++)
+            for (int c = 0; c < COLS; c++)
+                canvasData[r][c] = Color.WHITE;
 
         pixels = new Rectangle[ROWS][COLS];
 
@@ -69,7 +80,6 @@ public class HelloController {
 
                 StackPane cell = new StackPane();
 
-                // CRITICAL: allow cell to expand
                 cell.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
                 Rectangle rect = new Rectangle();
@@ -98,21 +108,26 @@ public class HelloController {
     }
 
     private void applyTool(int row, int col) {
+        Color previous = canvasData[row][col];
+        Color next = curMode == Mode.Eraser ? Color.WHITE : curColor;
 
-        switch (curMode) {
+        if (previous.equals(next)) return;
 
-            case Pencil:
-                pixels[row][col].setFill(curColor);
-                break;
-
-            case Eraser:
-                pixels[row][col].setFill(Color.WHITE);
-                break;
-
-            case Fill:
-                break;
-        }
+        Operation op = new Operation(row, col, previous, next);
+        undoStack.push(op);
+        redoStack.clear();
+        applyOperation(op);
     }
+
+    private void applyOperation(Operation op) {
+        setPixel(op.row, op.col, op.next);
+    }
+
+    private void setPixel(int row, int col, Color color){
+        canvasData[row][col] = color;
+        pixels[row][col].setFill(color);
+    }
+
 
     @FXML
     public void selectPencil() {
@@ -132,7 +147,26 @@ public class HelloController {
     @FXML
     public void selectClear() {
         for (int r = 0; r < ROWS; r++)
-            for (int c = 0; c < COLS; c++)
+            for (int c = 0; c < COLS; c++) {
+                canvasData[r][c] = Color.WHITE;
                 pixels[r][c].setFill(Color.WHITE);
+            }
+    }
+
+    @FXML
+    public void selectUndo(){
+        if(undoStack.isEmpty()) return;
+        Operation op = undoStack.pop();
+        redoStack.push(op);
+        setPixel(op.row,op.col,op.previous);
+    }
+    @FXML
+    public void selectRedo(){
+        if (redoStack.isEmpty()) return;
+
+        Operation op = redoStack.pop();
+        undoStack.push(op);
+
+        applyOperation(op);
     }
 }

@@ -20,8 +20,6 @@ public class HelloController {
     private Deque<Operation> undoStack = new ArrayDeque<>();
     private Deque<Operation> redoStack = new ArrayDeque<>();
 
-
-
     private Color curColor = Color.BLACK;
     private Mode curMode = Mode.Pencil;
 

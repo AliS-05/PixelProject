@@ -8,17 +8,17 @@ import java.util.ArrayList;
 public class ReadFile {
     //magic number = pxbmp
     private static final byte[] magicNumber = {0x50, 0x58, 0x42, 0x4D, 0x50};
-    ArrayList<Byte> byteArray = new ArrayList<Byte>();
-    public void ReadFile(String filename){
+    ArrayList<Byte> byteArray = new ArrayList<>();
+    public Color[][] readFile(String filename){
         try(DataInputStream inputStream = new DataInputStream(new FileInputStream(filename))){
              if(!verifyMagicNumber(inputStream)){
-                 System.out.println("Wrong File Type!");
-                 return;
+                 throw new IOException("Wrong file format! Only .pxbmp files are supported currently");
              }
-             Color[][] grid = populateCanvas(inputStream);
+            return populateCanvas(inputStream);
         } catch (IOException e){
             e.printStackTrace();
         }
+        return null;
     }
 
     private boolean verifyMagicNumber(DataInputStream inputStream) throws IOException{

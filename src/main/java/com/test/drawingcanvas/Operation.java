@@ -2,7 +2,7 @@ package com.test.drawingcanvas;
 
 import javafx.scene.paint.Color;
 
-public class Operation {
+public class Operation implements java.io.Serializable{
     public final int row, col;
     public final Color previous, next;
 

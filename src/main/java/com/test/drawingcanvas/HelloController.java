@@ -8,6 +8,8 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
 
 import java.io.IOException;
+import java.net.BindException;
+import java.net.UnknownHostException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -16,6 +18,8 @@ public class HelloController {
     private static final int ROWS = 16;
     private static final int COLS = 16;
 
+    private Server server;
+    private Client client;
     // source of truth grid
     private static Color[][] canvasData = new Color[ROWS][COLS];
     // these probably need to be static as well for all users to receive same undo's and redo's
@@ -122,6 +126,9 @@ public class HelloController {
     }
 
     private void applyOperation(Operation op) {
+        if(this.server != null) { // dont attempt to write to a nonexistent server
+            this.server.updateServerOperation(op);
+        }
         setPixel(op.row, op.col, op.next);
     }
 
@@ -205,5 +212,19 @@ public class HelloController {
         //NOTE once again need some way to get fileName
         Color[][] pixels = rf.readFile("src/Data/test.pxbmp");
         loadNewCanvas(pixels);
+    }
+
+    @FXML
+    public void hostServer() throws BindException, IOException {
+        System.out.println("Hosting Server...");
+        this.server = new Server(8080);
+        this.server.initServerCanvas(canvasData, ROWS, COLS);
+    }
+
+    @FXML
+    public void joinServer() throws UnknownHostException, IOException{
+        System.out.println("Joining Server...");
+        client = new Client("127.0.0.1", 8080); // keep it localhost for now
+
     }
 }

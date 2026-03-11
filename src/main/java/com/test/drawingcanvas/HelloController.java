@@ -23,8 +23,8 @@ public class HelloController {
     // source of truth grid
     private static Color[][] canvasData = new Color[ROWS][COLS];
     // these probably need to be static as well for all users to receive same undo's and redo's
-    private Deque<Operation> undoStack = new ArrayDeque<>();
-    private Deque<Operation> redoStack = new ArrayDeque<>();
+    private static Deque<Operation> undoStack = new ArrayDeque<>();
+    private static Deque<Operation> redoStack = new ArrayDeque<>();
 
     private Color curColor = Color.BLACK;
     private Mode curMode = Mode.Pencil;
@@ -163,8 +163,8 @@ public class HelloController {
     public void selectClear() {
         for (int r = 0; r < ROWS; r++)
             for (int c = 0; c < COLS; c++) {
-                canvasData[r][c] = Color.WHITE;
-                pixels[r][c].setFill(Color.WHITE);
+                Operation op = new Operation(r, c, canvasData[r][c], Color.WHITE);
+                applyOperation(op);
             }
     }
 
@@ -173,7 +173,9 @@ public class HelloController {
         if (undoStack.isEmpty()) return;
         Operation op = undoStack.pop();
         redoStack.push(op);
-        setPixel(op.row, op.col, op.getPrevious());
+
+        Operation undoOp = new Operation(op.row, op.col, op.getNext(), op.getPrevious());
+        applyOperation(undoOp);
     }
 
     @FXML
@@ -197,8 +199,10 @@ public class HelloController {
     public void loadNewCanvas(Color[][] newData) {
         for (int r = 0; r < ROWS; r++) {
             for (int c = 0; c < COLS; c++) {
-                canvasData[r][c] = newData[r][c];
-                pixels[r][c].setFill(newData[r][c]);
+                Operation op = new Operation(r, c, canvasData[r][c], newData[r][c]);
+                applyOperation(op);
+                //canvasData[r][c] = newData[r][c];
+                //pixels[r][c].setFill(newData[r][c]);
             }
         }
     }

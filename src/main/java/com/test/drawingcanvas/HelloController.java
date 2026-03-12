@@ -1,5 +1,6 @@
 package com.test.drawingcanvas;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.layout.*;
@@ -8,6 +9,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
 
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.BindException;
 import java.net.UnknownHostException;
 import java.util.ArrayDeque;
@@ -23,11 +25,11 @@ public class HelloController {
     // source of truth grid
     private static Color[][] canvasData = new Color[ROWS][COLS];
     // these probably need to be static as well for all users to receive same undo's and redo's
-    private static Deque<Operation> undoStack = new ArrayDeque<>();
-    private static Deque<Operation> redoStack = new ArrayDeque<>();
 
     private Color curColor = Color.BLACK;
     private Mode curMode = Mode.Pencil;
+
+    private final Object stackMutex = new Object();
 
     @FXML
     private GridPane grid;
@@ -120,21 +122,21 @@ public class HelloController {
         if (previous.equals(next)) return;
 
         Operation op = new Operation(row, col, previous, next);
-        undoStack.push(op);
-        redoStack.clear();
-        applyOperation(op);
+        applyOperation(op, false);
     }
 
-    private void applyOperation(Operation op) {
-        if(this.client != null) { // if we are the client then send the operation to the server
-            this.client.sendOperation(op);
+    private void applyOperation(Operation op, boolean fromNetwork) {
+        if(!fromNetwork) {
+            if (this.client != null) { // if we are the client then send the operation to the server
+                this.client.sendOperation(op);
+            }
+            if (this.server != null) { // otherwise if we are the host AND we have a server, update server state
+                this.server.processOperation(op, null);
+            }
         }
-        if(this.server != null) { // otherwise if we are the host AND we have a server, update server state
-            this.server.updateServerOperation(op);
-            this.server.broadcastToClients(op, null);
-        }
-        if(!op.getNext().equals(canvasData[op.row][op.col])){
-            setPixel(op.row, op.col, op.getNext()); //always update UI locally (optimistic concurrency)
+
+        if(op.type == null){
+            Platform.runLater(() -> setPixel(op.row, op.col, op.getNext()));
         }
     }
 
@@ -164,28 +166,26 @@ public class HelloController {
         for (int r = 0; r < ROWS; r++)
             for (int c = 0; c < COLS; c++) {
                 Operation op = new Operation(r, c, canvasData[r][c], Color.WHITE);
-                applyOperation(op);
+                applyOperation(op, false);
             }
     }
 
     @FXML
     public void selectUndo() {
-        if (undoStack.isEmpty()) return;
-        Operation op = undoStack.pop();
-        redoStack.push(op);
-
-        Operation undoOp = new Operation(op.row, op.col, op.getNext(), op.getPrevious());
-        applyOperation(undoOp);
+        if(client != null) {
+            client.sendOperation(new Operation(Mode.Undo));
+        } else if(server != null){
+            server.processOperation(new Operation(Mode.Undo), null);
+        }
     }
 
     @FXML
     public void selectRedo() {
-        if (redoStack.isEmpty()) return;
-
-        Operation op = redoStack.pop();
-        undoStack.push(op);
-
-        applyOperation(op);
+        if(client != null) {
+            client.sendOperation(new Operation(Mode.Redo));
+        } else if(server != null){
+            server.processOperation(new Operation(Mode.Redo), null);
+        }
     }
 
     public static int getRows() {
@@ -200,7 +200,7 @@ public class HelloController {
         for (int r = 0; r < ROWS; r++) {
             for (int c = 0; c < COLS; c++) {
                 Operation op = new Operation(r, c, canvasData[r][c], newData[r][c]);
-                applyOperation(op);
+                applyOperation(op, false);
                 //canvasData[r][c] = newData[r][c];
                 //pixels[r][c].setFill(newData[r][c]);
             }
@@ -228,6 +228,9 @@ public class HelloController {
     public void hostServer() throws BindException, IOException {
         System.out.println("Hosting Server...");
         this.server = new Server(8080);
+        this.server.setUiUpdateCallback(op -> {
+            Platform.runLater(() -> setPixel(op.row, op.col, op.getNext()));
+        });
         this.server.start();
         this.server.initServerCanvas(canvasData, ROWS, COLS);
     }
@@ -237,8 +240,8 @@ public class HelloController {
         System.out.println("Joining Server...");
         client = new Client("127.0.0.1", 8080); // keep it localhost for now
         this.client.listenForOperation((op) -> {
-            javafx.application.Platform.runLater(() -> {
-                applyOperation(op);
+            Platform.runLater(() -> {
+                applyOperation(op, true);
             });
         });
 

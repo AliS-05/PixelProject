@@ -5,4 +5,6 @@ public enum Mode {
     Eraser,
     Fill,
     Clear,
+    Undo,
+    Redo,
 }

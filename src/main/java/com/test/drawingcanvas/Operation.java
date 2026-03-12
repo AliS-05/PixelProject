@@ -4,11 +4,12 @@ import javafx.scene.paint.Color;
 import java.io.Serializable;
 
 public class Operation implements Serializable {
-    private static final long serialVersionUID = 1L;
-    public final int row, col;
-    public final double prevR, prevG, prevB, nextR, nextG, nextB;
+    public Mode type;
+    public int row, col;
+    public double prevR, prevG, prevB, nextR, nextG, nextB;
 
     public Operation(int row, int col, Color previous, Color next) {
+        this.type = null;
         this.row = row;
         this.col = col;
         this.prevR = previous.getRed();
@@ -18,6 +19,11 @@ public class Operation implements Serializable {
         this.nextG = next.getGreen();
         this.nextB = next.getBlue();
     }
+
+    public Operation(Mode type){
+        this.type = type;
+    }
+
 
     public Color getPrevious() { return Color.color(prevR, prevG, prevB); }
     public Color getNext() { return Color.color(nextR, nextG, nextB); }

@@ -34,16 +34,35 @@ public class Server {
 
     public void start() {
         new Thread(() -> {
-            try {
-                this.s = ss.accept();
-                ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-                synchronized (clientOutputs) { clientOutputs.add(out); }
-                this.in = new ObjectInputStream(s.getInputStream());
-                while (true) {
-                    Operation op = (Operation) in.readObject();
-                    processOperation(op, out);
+            while (true) {
+                try {
+                    Socket socket = ss.accept();
+
+                    ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+
+                    synchronized (clientOutputs) {
+                        clientOutputs.add(out);
+                    }
+                    synchronized (mutex){
+                        out.writeObject(serializeCanvas());
+                        out.flush();
+                    }
+                    new Thread(() -> {
+                        try {
+                            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+                            while (true) {
+                                Operation op = (Operation) in.readObject();
+                                processOperation(op, out);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) { e.printStackTrace(); }
+            }
         }).start();
     }
 
@@ -71,7 +90,9 @@ public class Server {
     public void initServerCanvas(Color[][] clientCanvas, int rows, int cols) {
         this.serverCanvasData = new Color[rows][cols];
         for (int r = 0; r < rows; r++) {
-            System.arraycopy(clientCanvas[r], 0, serverCanvasData[r], 0, cols);
+            for(int c = 0; c < cols; c++){
+                serverCanvasData[r][c] = clientCanvas[r][c];
+            }
         }
     }
 
@@ -109,5 +130,29 @@ public class Server {
             broadcastToClients(op, null);
             if (uiUpdateCallback != null) Platform.runLater(() -> uiUpdateCallback.accept(op));
         }
+    }
+
+    private int[][] serializeCanvas() {
+        int rows = serverCanvasData.length;
+        int cols = serverCanvasData[0].length;
+
+        int[][] data = new int[rows][cols];
+
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                Color col = serverCanvasData[r][c];
+
+                int red = (int)(col.getRed() * 255);
+                int g = (int)(col.getGreen() * 255);
+                int b = (int)(col.getBlue() * 255);
+
+                data[r][c] =
+                                (red << 16) |
+                                (g << 8) |
+                                b;
+            }
+        }
+
+        return data;
     }
 }

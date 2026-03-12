@@ -239,6 +239,12 @@ public class HelloController {
     public void joinServer() throws UnknownHostException, IOException{
         System.out.println("Joining Server...");
         client = new Client("127.0.0.1", 8080); // keep it localhost for now
+
+        Color[][] initial = client.loadServerCanvas(); //getting server canvas state upon joining (ie your friend has already started drawing)
+        if(initial != null){
+            loadNewCanvas(initial);
+        }
+
         this.client.listenForOperation((op) -> {
             Platform.runLater(() -> {
                 applyOperation(op, true);

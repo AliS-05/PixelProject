@@ -1,5 +1,7 @@
 package com.test.drawingcanvas;
 
+import javafx.scene.paint.Color;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -61,6 +63,35 @@ public class Client {
                System.out.println("ERROR IN CLIENT.JAVA");
            }
         }).start();
+    }
+
+
+    public Color[][] loadServerCanvas(){
+        try{
+            int[][] data = (int[][]) in.readObject();
+
+            int rows = data.length;
+            int cols = data[0].length;
+
+            Color[][] canvas = new Color[rows][cols];
+
+            for(int r = 0; r < rows; r++){
+                for(int c = 0; c < cols; c++){
+                    int argb = data[r][c];
+
+                    int red = (argb >> 16) & 0xff;
+                    int g = (argb >> 8) & 0xff;
+                    int b = argb & 0xff;
+
+                    canvas[r][c] = Color.rgb(red, g, b);
+                }
+            }
+
+            return canvas;
+
+        } catch(Exception e){
+            throw new RuntimeException(e);
+        }
     }
 
 }

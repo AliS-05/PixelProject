@@ -38,6 +38,9 @@ public class HelloController {
     private ColorPicker colorPicker;
 
     private Rectangle[][] pixels;
+    
+    private boolean showGrid = true;
+    private Rectangle[][] gridLines;
 
     @FXML
     public void initialize() {
@@ -46,6 +49,7 @@ public class HelloController {
                 canvasData[r][c] = Color.WHITE;
 
         pixels = new Rectangle[ROWS][COLS];
+        gridLines = new Rectangle[ROWS][COLS];
 
         // CRITICAL: allow GridPane to expand
         grid.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
@@ -104,6 +108,8 @@ public class HelloController {
 
                 int r = row;
                 int c = col;
+                
+                gridLines[row][col] = rect;
 
                 cell.setOnMousePressed(e -> applyTool(r, c));
                 cell.setOnMouseDragged(e -> applyTool(r, c));
@@ -251,5 +257,16 @@ public class HelloController {
             });
         });
 
+    }
+
+    @FXML
+    public void toggleGridVisibility() {
+        showGrid = !showGrid;
+        Color gridColor = showGrid ? Color.LIGHTGRAY : Color.TRANSPARENT;
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
+                gridLines[r][c].setStroke(gridColor);
+            }
+        }
     }
 }

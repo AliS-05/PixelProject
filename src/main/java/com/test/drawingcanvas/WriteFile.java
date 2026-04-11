@@ -11,15 +11,11 @@ public class WriteFile {
     public void writeFile(int rows, int cols, Color[][] canvasData, String fileName) throws IOException {
         // DataOutputStream allows for writeInt, writeString etc. FileOutputStream is for straight bytes one by one
         try(DataOutputStream output = new DataOutputStream(new FileOutputStream(fileName))){
-            //NOTE need to take filename from user, im sure scenebuilder has some kind of popup menu
-            //write magic numbers
             for(int i = 0; i < 4; i++){
                 output.writeByte(magicNumber[i]);
             }
             System.out.println("Wrote Magic Number Successfully");
 
-            //write canvas data
-            // need to write dimensions first ? probably a good idea:w
             // could also add date of creation, last edit time etc.
             output.writeInt(rows);
             output.writeInt(cols);

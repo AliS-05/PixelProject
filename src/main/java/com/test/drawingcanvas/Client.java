@@ -12,7 +12,8 @@ public class Client {
     private Socket s = null;
     private ObjectOutputStream out;
     private ObjectInputStream in;
-    // com.test.drawingcanvas.Launcher.Client c = new com.test.drawingcanvas.Launcher.Client("127.0.0.1", 8080);
+
+    //client object establishes connection to server addr and port
     public Client(String addr, int port) {
         try {
             System.out.println("Attempting to open socket");
@@ -51,12 +52,14 @@ public class Client {
         }
     }
 
-    //this function should update the ui upon receiving a new operation object from the server
+    //spawns a background thread to continuously listen for new operations being sent out by the server (see Server.broadcastToClients)
+    //a Consumer interface is used because the controller needs to pass a Platform.RunLater to update the UI.
+    //listenForOperations UI behavior is defined in PixelController:227 with a lambda
     public void listenForOperation(java.util.function.Consumer<Operation> receivedOperation){
         new Thread(() -> {
-           try{
-               while(true){
-                   Operation op = (Operation) in.readObject();
+            try{
+                while(true){
+                    Operation op = (Operation) in.readObject();
                     receivedOperation.accept(op);
                }
            } catch(Exception e){
@@ -65,7 +68,7 @@ public class Client {
         }).start();
     }
 
-
+    //bit masking stuff because javafx Color object is not serializable we can just store info as ints
     public Color[][] loadServerCanvas(){
         try{
             int[][] data = (int[][]) in.readObject();

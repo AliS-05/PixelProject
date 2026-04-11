@@ -47,6 +47,7 @@
             <Button fx:id="clear" mnemonicParsing="false" onAction="#selectClear" text="Clear" />
             <Button fx:id="undo" mnemonicParsing="false" onAction="#selectUndo" text="Undo" />
             <Button fx:id="redo" mnemonicParsing="false" onAction="#selectRedo" text="Redo" />
+            <Button fx:id="toggleGrid" mnemonicParsing="false" onAction="#toggleGridVisibility" text="Toggle Grid" />
             <Button fx:id="save" mnemonicParsing="false" onAction="#saveFile" text="Save" />
             <Button fx:id="load" mnemonicParsing="false" onAction="#loadFile" text="Load" />
         </items>

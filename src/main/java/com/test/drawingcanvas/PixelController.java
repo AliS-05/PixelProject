@@ -25,6 +25,9 @@ public class PixelController {
     @FXML
     private ColorPicker colorPicker;
     private Rectangle[][] pixels;
+    private boolean showGrid = true;
+    private Rectangle[][] gridLines;
+
 
     @FXML
     public void initialize() { //fills in blank canvas and intializes JavaFX UI
@@ -33,6 +36,7 @@ public class PixelController {
                 canvasData[r][c] = Color.WHITE;
 
         pixels = new Rectangle[ROWS][COLS];
+        gridLines = new Rectangle[ROWS][COLS];
         //making rectangles proportional to window size
         grid.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         grid.setSnapToPixel(true);
@@ -85,7 +89,7 @@ public class PixelController {
 
                 int r = row;
                 int c = col;
-
+                gridLines[row][col] = rect;
                 cell.setOnMousePressed(e -> applyTool(r, c));
                 cell.setOnMouseDragged(e -> applyTool(r, c));
 
@@ -233,4 +237,16 @@ public class PixelController {
             }
         }).start();
     }
+    @FXML
+    public void toggleGridVisibility() {
+        showGrid = !showGrid;
+        Color gridColor = showGrid ? Color.LIGHTGRAY : Color.TRANSPARENT;
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
+                gridLines[r][c].setStroke(gridColor);
+            }
+        }
+    }
 }
+
+

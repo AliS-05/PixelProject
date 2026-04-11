@@ -7,53 +7,37 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
-
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.BindException;
-import java.net.UnknownHostException;
-import java.util.ArrayDeque;
-import java.util.Deque;
 
-public class HelloController {
-
+public class PixelController {
     private static final int ROWS = 16;
     private static final int COLS = 16;
-
     private Server server;
     private Client client;
     // source of truth grid
     private static Color[][] canvasData = new Color[ROWS][COLS];
-    // these probably need to be static as well for all users to receive same undo's and redo's
-
     private Color curColor = Color.BLACK;
     private Mode curMode = Mode.Pencil;
-
     private final Object stackMutex = new Object();
-
     @FXML
     private GridPane grid;
-
     @FXML
     private ColorPicker colorPicker;
-
     private Rectangle[][] pixels;
 
     @FXML
-    public void initialize() {
+    public void initialize() { //fills in blank canvas and intializes JavaFX UI
         for (int r = 0; r < ROWS; r++)
             for (int c = 0; c < COLS; c++)
                 canvasData[r][c] = Color.WHITE;
 
         pixels = new Rectangle[ROWS][COLS];
-
-        // CRITICAL: allow GridPane to expand
+        //making rectangles proportional to window size
         grid.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         grid.setSnapToPixel(true);
-        // clear any constraints
         grid.getColumnConstraints().clear();
         grid.getRowConstraints().clear();
-
         // make columns expand evenly
         for (int i = 0; i < COLS; i++) {
             ColumnConstraints col = new ColumnConstraints();
@@ -85,11 +69,8 @@ public class HelloController {
         // create cells
         for (int row = 0; row < ROWS; row++) {
             for (int col = 0; col < COLS; col++) {
-
                 StackPane cell = new StackPane();
-
                 cell.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-
                 Rectangle rect = new Rectangle();
                 rect.setFill(Color.WHITE);
                 rect.setStroke(Color.LIGHTGRAY);
@@ -114,7 +95,7 @@ public class HelloController {
             }
         }
     }
-
+    //this is how the canvas gets updated
     private void applyTool(int row, int col) {
         Color previous = canvasData[row][col];
         Color next = curMode == Mode.Eraser ? Color.WHITE : curColor;
@@ -127,15 +108,15 @@ public class HelloController {
 
     private void applyOperation(Operation op, boolean fromNetwork) {
         if(!fromNetwork) {
-            if (this.client != null) { // if we are the client then send the operation to the server
+            if (this.client != null) { // client forwards operations to be processed by server
                 this.client.sendOperation(op);
             }
-            if (this.server != null) { // otherwise if we are the host AND we have a server, update server state
+            if (this.server != null) { //server processors all operations, even its own
                 this.server.processOperation(op, null);
             }
         }
 
-        if(op.type == null){
+        if(op.type == null){ //optimistically apply every operation no matter what to the UI
             Platform.runLater(() -> setPixel(op.row, op.col, op.getNext()));
         }
     }
@@ -170,6 +151,7 @@ public class HelloController {
             }
     }
 
+    //stacks handled with server mutex
     @FXML
     public void selectUndo() {
         if(client != null) {
@@ -201,25 +183,19 @@ public class HelloController {
             for (int c = 0; c < COLS; c++) {
                 Operation op = new Operation(r, c, canvasData[r][c], newData[r][c]);
                 applyOperation(op, false);
-                //canvasData[r][c] = newData[r][c];
-                //pixels[r][c].setFill(newData[r][c]);
             }
         }
     }
 
-
-
     @FXML
     public void saveFile() throws IOException {
         WriteFile wf = new WriteFile();
-        // NOTE need some element to get fileName
         wf.writeFile(ROWS, COLS, canvasData, "src/Data/test.pxbmp");
     }
 
     @FXML
     public void loadFile() throws IOException{
         ReadFile rf = new ReadFile();
-        //NOTE once again need some way to get fileName
         Color[][] pixels = rf.readFile("src/Data/test.pxbmp");
         loadNewCanvas(pixels);
     }
@@ -236,20 +212,25 @@ public class HelloController {
     }
 
     @FXML
-    public void joinServer() throws UnknownHostException, IOException{
-        System.out.println("Joining Server...");
-        client = new Client("127.0.0.1", 8080); // keep it localhost for now
+    public void joinServer() {
+        new Thread(() -> {
+            try {
+                System.out.println("Joining Server...");
+                client = new Client("127.0.0.1", 8080);
 
-        Color[][] initial = client.loadServerCanvas(); //getting server canvas state upon joining (ie your friend has already started drawing)
-        if(initial != null){
-            loadNewCanvas(initial);
-        }
+                // sync states with current server canvas
+                Color[][] initial = client.loadServerCanvas();
+                if(initial != null){
+                    Platform.runLater(() -> loadNewCanvas(initial));
+                }
+                //listens for incoming operations on background thread
+                this.client.listenForOperation((op) -> {
+                    Platform.runLater(() -> applyOperation(op, true));
+                });
 
-        this.client.listenForOperation((op) -> {
-            Platform.runLater(() -> {
-                applyOperation(op, true);
-            });
-        });
-
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 }

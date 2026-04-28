@@ -25,6 +25,7 @@ public class Server {
     private final Deque<Operation> redoStack = new ArrayDeque<>();
 
     public Server(int port) throws IOException {
+        System.out.println("Creating Server");
         ss = new ServerSocket(port);
         ss.setReuseAddress(true); //needed for localhost testing
     }
@@ -38,7 +39,7 @@ public class Server {
             while (true) {
                 try {
                     Socket socket = ss.accept();
-
+                    System.out.println("Accepted new client!");
                     //to support multiple clients simultaneously we keep an array list of Object Output Streams
                     // and loop the array list to send the data to each client individually
                     ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream()); //each client is its own object

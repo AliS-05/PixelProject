@@ -15,7 +15,7 @@ public class PixelApp extends Application {
     public void start(Stage stage) throws Exception{
 
         FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/com/test/drawingcanvas/sceneTest.fxml")
+                getClass().getResource("/com/test/drawingcanvas/title.fxml")
         );
         Scene scene = new Scene(loader.load(), 800, 600);
 

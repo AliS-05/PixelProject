@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.test.drawingcanvas.PixelController">
+
+    <children>
+
+        <MenuBar VBox.vgrow="NEVER">
+            <menus>
+                <Menu text="File">
+                    <items>
+                        <MenuItem onAction="#loadFile" text="Open…" />
+                        <MenuItem onAction="#saveFile" text="Save" />
+                        <MenuItem onAction="#saveFileAs" text="Save As…" />
+                        <SeparatorMenuItem />
+                    </items>
+                </Menu>
+
+                <Menu text="Edit">
+                    <items>
+                        <MenuItem onAction="#selectUndo" text="Undo" />
+                        <MenuItem onAction="#selectRedo" text="Redo" />
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+
+        <AnchorPane VBox.vgrow="ALWAYS">
+
+            <children>
+            <Button fx:id="resizeGrid" layoutX="830.0" layoutY="258.0" mnemonicParsing="false" onAction="#resizeGrid" text="Resize Grid" />
+
+                <GridPane fx:id="grid" layoutX="167.0" layoutY="44.0" prefHeight="600.0" prefWidth="600.0" style="-fx-border-color: black; -fx-border-width: 2; -fx-background-color: white;" />
+
+                <VBox alignment="CENTER" layoutX="820.0" layoutY="158.0">
+                    <children>
+                        <ColorPicker fx:id="colorPicker" />
+                    </children>
+                </VBox>
+
+                <BorderPane layoutY="-8.0">
+
+                    <left>
+                        <HBox alignment="CENTER" spacing="10.0" />
+                    </left>
+
+                    <right>
+                        <HBox alignment="CENTER">
+
+                            <children>
+
+                                <VBox alignment="CENTER" />
+
+                            </children>
+
+                        </HBox>
+                    </right>
+
+                </BorderPane>
+
+                <CheckBox layoutX="845.0" layoutY="210.0" onAction="#toggleGridVisibility" text="Grid" />
+                  <HBox alignment="CENTER" layoutX="291.0" layoutY="22.0" spacing="5.0">
+
+                      <children>
+
+                          <Button onAction="#selectPencil" text="Pencil" />
+                          <Button onAction="#selectEraser" text="Eraser" />
+                          <Button onAction="#selectFill" text="Fill" />
+                          <Button onAction="#selectClear" text="Clear" />
+
+                      </children>
+
+                  </HBox>
+                    <Button layoutX="165.0" layoutY="21.0" onAction="#selectUndo" text="Undo">
+                        <font>
+                  <Font size="13.0" />
+               </font>
+                    </Button>
+                    <Button layoutX="215.0" layoutY="21.0" onAction="#selectRedo" text="Redo">
+                        <font>
+                  <Font size="13.0" />
+               </font>
+                    </Button>
+
+                    <Button layoutX="844.0" layoutY="35.0" onAction="#goToSettings" text="Settings" />
+
+                      <Button layoutX="732.0" layoutY="22.0" onAction="#goToTitle" text="Exit" />
+            <Button layoutX="628.0" layoutY="23.0" onAction="#selectClear" text="Load" />
+            <Button layoutX="580.0" layoutY="23.0" onAction="#selectClear" text="Save" />
+
+            </children>
+        </AnchorPane>
+
+    </children>
+</VBox>

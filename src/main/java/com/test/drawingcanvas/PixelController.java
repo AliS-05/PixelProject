@@ -1,6 +1,7 @@
 package com.test.drawingcanvas;
 
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.TextInputDialog;
@@ -464,6 +465,16 @@ public class PixelController {
             }
         }
     }
+
+    @FXML
+    public void goToSettings(ActionEvent e){
+        new SceneController().goToSettings(e);
+    }
+
+
+    @FXML
+    public void goToTitle(ActionEvent e) {
+        new SceneController().goToTitle(e);
+    }
+
 }
-
-

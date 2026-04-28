@@ -50,6 +50,7 @@
             <Button fx:id="toggleGrid" mnemonicParsing="false" onAction="#toggleGridVisibility" text="Toggle Grid" />
             <Button fx:id="save" mnemonicParsing="false" onAction="#saveFile" text="Save" />
             <Button fx:id="load" mnemonicParsing="false" onAction="#loadFile" text="Load" />
+            <Button fx:id="resizeGrid" mnemonicParsing="false" onAction="#resizeGrid" text="Resize Grid" />
         </items>
       </ToolBar>
    </left>

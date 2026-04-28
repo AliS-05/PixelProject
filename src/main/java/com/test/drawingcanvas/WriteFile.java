@@ -2,39 +2,55 @@ package com.test.drawingcanvas;
 
 import javafx.scene.paint.Color;
 
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class WriteFile {
-    // Magic Number = PXBMP (50 58 42 4D 50)
-    private final byte[] magicNumber= {0x50, 0x58, 0x42, 0x4D, 0x50};
+
+    private static final byte[] MAGIC = {0x50, 0x58, 0x42, 0x4D}; // PXBM
 
     public void writeFile(int rows, int cols, Color[][] canvasData, String fileName) throws IOException {
-        // DataOutputStream allows for writeInt, writeString etc. FileOutputStream is for straight bytes one by one
-        try(DataOutputStream output = new DataOutputStream(new FileOutputStream(fileName))){
-            for(int i = 0; i < 4; i++){
-                output.writeByte(magicNumber[i]);
-            }
-            System.out.println("Wrote Magic Number Successfully");
+        try (DataOutputStream out = new DataOutputStream(new FileOutputStream(fileName))) {
 
-            // could also add date of creation, last edit time etc.
-            output.writeInt(rows);
-            output.writeInt(cols);
+            // Magic
+            for (byte b : MAGIC) out.writeByte(b);
 
-            for(int r = 0; r < rows; r++){
-                for(int c = 0; c < cols; c++){
-                    //Javafx Stores the RGB values as floats between 0.0 - 1.0
-                    // by casting to an int and multiplying by 255 we can get a close enough RGB value
-                    // so each pixel will be stored as 3 bytes
-                    // 16 x 16 grid = 768 bytes
-                    output.writeByte((int)(canvasData[r][c].getRed() * 255));
-                    output.writeByte((int)(canvasData[r][c].getGreen() * 255));
-                    output.writeByte((int)(canvasData[r][c].getBlue() * 255));
+            // Grid size
+            out.writeInt(rows);
+            out.writeInt(cols);
+
+            // Count non-transparent pixels
+            int pixelCount = 0;
+            for (int r = 0; r < rows; r++) {
+                for (int c = 0; c < cols; c++) {
+                    if (canvasData[r][c].getOpacity() > 0.0) {
+                        pixelCount++;
+                    }
                 }
             }
 
-        }
-        catch(FileNotFoundException e){
-            e.printStackTrace();
+            out.writeInt(pixelCount);
+
+            // Write each pixel
+            for (int r = 0; r < rows; r++) {
+                for (int c = 0; c < cols; c++) {
+                    Color color = canvasData[r][c];
+                    if (color.getOpacity() > 0.0) {
+                        //Javafx Stores the RGB values as floats between 0.0 - 1.0
+                        // by casting to an int and multiplying by 255 we can get a close enough RGB value
+                        // so each pixel will be stored as 3 bytes
+                        // 16 x 16 grid = 768 bytes
+                        out.writeInt(r);
+                        out.writeInt(c);
+                        out.writeByte((int)(color.getRed()   * 255));
+                        out.writeByte((int)(color.getGreen() * 255));
+                        out.writeByte((int)(color.getBlue()  * 255));
+                        out.writeByte((int)(color.getOpacity() * 255)); // alpha
+                    }
+                }
+            }
         }
     }
 }
+

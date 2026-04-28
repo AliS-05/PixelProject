@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.GridPane?>
 
-<BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.test.drawingcanvas.HelloController">
+<BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.test.drawingcanvas.PixelController">
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
@@ -47,8 +47,10 @@
             <Button fx:id="clear" mnemonicParsing="false" onAction="#selectClear" text="Clear" />
             <Button fx:id="undo" mnemonicParsing="false" onAction="#selectUndo" text="Undo" />
             <Button fx:id="redo" mnemonicParsing="false" onAction="#selectRedo" text="Redo" />
+            <Button fx:id="toggleGrid" mnemonicParsing="false" onAction="#toggleGridVisibility" text="Toggle Grid" />
             <Button fx:id="save" mnemonicParsing="false" onAction="#saveFile" text="Save" />
             <Button fx:id="load" mnemonicParsing="false" onAction="#loadFile" text="Load" />
+            <Button fx:id="resizeGrid" mnemonicParsing="false" onAction="#resizeGrid" text="Resize Grid" />
         </items>
       </ToolBar>
    </left>

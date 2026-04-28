@@ -12,6 +12,7 @@ public class Operation implements Serializable {
         this.type = null;
         this.row = row;
         this.col = col;
+        //previous and next states are needed for undo and redo to function properly
         this.prevR = previous.getRed();
         this.prevG = previous.getGreen();
         this.prevB = previous.getBlue();

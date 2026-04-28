@@ -6,7 +6,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 
-public class HelloApplication extends Application {
+public class PixelApp extends Application {
 
     private double offsetX;
     private double offsetY;

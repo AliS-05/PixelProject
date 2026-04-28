@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ColorPicker;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -422,31 +423,39 @@ public class PixelController {
             currentFile = file;
         }
     }
-    @FXML
-    public void hostServer() throws BindException, IOException {
-        System.out.println("Hosting Server...");
-        this.server = new Server(8080);
-        this.server.setUiUpdateCallback(op -> {
-            Platform.runLater(() -> setPixel(op.row, op.col, op.getNext()));
-        });
-        this.server.start();
-        this.server.initServerCanvas(canvasData, ROWS, COLS);
+
+
+    public void startHosting() {
+        try {
+            this.server = new Server(8080);
+
+            this.server.setUiUpdateCallback(op ->
+                    Platform.runLater(() -> setPixel(op.row, op.col, op.getNext()))
+            );
+
+            this.server.start();
+            this.server.initServerCanvas(canvasData, ROWS, COLS);
+
+            System.out.println("Hosting on port 8080");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    @FXML
-    public void joinServer() {
+
+    public void connectToServer(String ip) {
         new Thread(() -> {
             try {
-                System.out.println("Joining Server...");
-                client = new Client("127.0.0.1", 8080);
+                System.out.println("Joining Server at IP: " + ip);
+                client = new Client(ip, 8080);
 
-                // sync states with current server canvas
                 Color[][] initial = client.loadServerCanvas();
-                if(initial != null){
+                if (initial != null) {
                     Platform.runLater(() -> loadNewCanvas(initial));
                 }
-                //listens for incoming operations on background thread
-                this.client.listenForOperation((op) -> {
+
+                client.listenForOperation(op -> {
                     Platform.runLater(() -> applyOperation(op, true));
                 });
 

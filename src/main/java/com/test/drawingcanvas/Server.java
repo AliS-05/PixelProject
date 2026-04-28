@@ -3,6 +3,7 @@ package com.test.drawingcanvas;
 import javafx.application.Platform;
 import javafx.scene.paint.Color;
 import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayDeque;
@@ -44,7 +45,7 @@ public class Server {
                     synchronized (clientOutputs) {
                         clientOutputs.add(out);
                     }
-                    //mutex sending serialized canvas data (JavaFX Color object is not serializable) to prevent race conditions
+                    // mutex sending serialized canvas data (JavaFX Color object is not serializable) to prevent race conditions
                     // or otherwise unexpected results from concurrency
                     synchronized (mutex){
                         out.writeObject(serializeCanvas()); //getting client up-to-date with current canvas data

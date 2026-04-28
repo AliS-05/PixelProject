@@ -3,8 +3,11 @@ package com.test.drawingcanvas;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.*;
+import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
 import javafx.application.Platform;
+
+import java.util.Optional;
 
 public class SceneController {
 
@@ -18,28 +21,54 @@ public class SceneController {
         }
     }
 
-    // Navigation
     public void goToDrawing(ActionEvent e) { switchScene(e, "drawing.fxml"); }
     public void goToSettings(ActionEvent e) { switchScene(e, "settings.fxml"); }
     public void goToJoin(ActionEvent e) { switchScene(e, "join.fxml"); }
     public void goToTitle(ActionEvent e) { switchScene(e, "title.fxml"); }
 
-    // Exit
     public void exitApp(ActionEvent e) {
         Platform.exit();
     }
 
-    // Settings toggles (placeholder)
-    public void toggleDarkMode(ActionEvent e) {
-        System.out.println("Dark mode toggled");
-    }
-
-    public void toggleGrid(ActionEvent e) {
-        System.out.println("Grid toggled");
-    }
-
-    // Join (placeholder)
     public void joinSession(ActionEvent e) {
-        System.out.println("Join clicked");
+        TextInputDialog dialog = new TextInputDialog("127.0.0.1");
+        dialog.setTitle("Join Server");
+        dialog.setHeaderText("Enter Server IP");
+        dialog.setContentText("IP:");
+
+        Optional<String> result = dialog.showAndWait();
+        if (result.isEmpty()) return;
+
+        String ip = result.get().trim();
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("drawing.fxml"));
+            Parent root = loader.load();
+
+            PixelController controller = loader.getController();
+            controller.connectToServer(ip);
+
+            Stage stage = (Stage)((Node)e.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void hostSession(ActionEvent e) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("drawing.fxml"));
+            Parent root = loader.load();
+
+            PixelController controller = loader.getController();
+            controller.startHosting(); // no IP needed or you pass it if you want
+
+            Stage stage = (Stage)((Node)e.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }

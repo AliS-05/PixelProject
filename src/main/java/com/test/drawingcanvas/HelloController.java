@@ -11,6 +11,7 @@ import javafx.scene.shape.StrokeType;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.BindException;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -227,7 +228,7 @@ public class HelloController {
     @FXML
     public void hostServer() throws BindException, IOException {
         System.out.println("Hosting Server...");
-        this.server = new Server(8080);
+        this.server = new Server(8080, 50, InetAddress.getByName("42.31.154.228"));
         this.server.setUiUpdateCallback(op -> {
             Platform.runLater(() -> setPixel(op.row, op.col, op.getNext()));
         });
@@ -238,7 +239,7 @@ public class HelloController {
     @FXML
     public void joinServer() throws UnknownHostException, IOException{
         System.out.println("Joining Server...");
-        client = new Client("127.0.0.1", 8080); // keep it localhost for now
+        client = new Client("45.31.154.228", 8080); // keep it localhost for now
 
         Color[][] initial = client.loadServerCanvas(); //getting server canvas state upon joining (ie your friend has already started drawing)
         if(initial != null){

@@ -429,9 +429,12 @@ public class PixelController {
         try {
             this.server = new Server(8080);
 
-            this.server.setUiUpdateCallback(op ->
-                    Platform.runLater(() -> setPixel(op.row, op.col, op.getNext()))
-            );
+            this.server.setUiUpdateCallback(op -> {
+                Platform.runLater(() -> {
+                    if (pixels == null) return;
+                    setPixel(op.row, op.col, op.getNext());
+                });
+            });
 
             this.server.start();
             this.server.initServerCanvas(canvasData, ROWS, COLS);

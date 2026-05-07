@@ -13,7 +13,9 @@ public class SceneController {
 
     private void switchScene(ActionEvent event, String file) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource(file));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(file));
+            Parent root = loader.load();
+
             Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
         } catch (Exception e) {
@@ -25,7 +27,8 @@ public class SceneController {
     public void goToSettings(ActionEvent e) { switchScene(e, "settings.fxml"); }
     public void goToJoin(ActionEvent e) { switchScene(e, "join.fxml"); }
     public void goToTitle(ActionEvent e) { switchScene(e, "title.fxml"); }
-
+    public void toggleDarkMode(ActionEvent e) {}
+    public void toggleGrid(ActionEvent e) {}
     public void exitApp(ActionEvent e) {
         Platform.exit();
     }

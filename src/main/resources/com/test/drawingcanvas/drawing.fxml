@@ -98,8 +98,8 @@
                     <Button layoutX="844.0" layoutY="35.0" onAction="#goToSettings" text="Settings" />
 
                       <Button layoutX="732.0" layoutY="22.0" onAction="#goToTitle" text="Exit" />
-            <Button layoutX="628.0" layoutY="23.0" onAction="#selectClear" text="Load" />
-            <Button layoutX="580.0" layoutY="23.0" onAction="#selectClear" text="Save" />
+            <Button layoutX="628.0" layoutY="23.0" onAction="#loadFile" text="Load" />
+            <Button layoutX="580.0" layoutY="23.0" onAction="#saveFile" text="Save" />
 
             </children>
         </AnchorPane>

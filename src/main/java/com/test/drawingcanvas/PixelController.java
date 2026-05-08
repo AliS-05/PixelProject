@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ColorPicker;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -15,12 +16,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.BindException;
 import java.util.Optional;
+import java.util.Stack;
 
 public class PixelController {
     private static int ROWS = 16;
     private static int COLS = 16;
-    private Server server;
-    private Client client;
+    private static Server server;
+    private static Client client;
     // source of truth grid
     private static Color[][] canvasData = new Color[ROWS][COLS];
     private Color curColor = Color.BLACK;
@@ -34,7 +36,8 @@ public class PixelController {
     private boolean showGrid = true;
     private Rectangle[][] gridLines;
     private File currentFile = null;
-
+    private final Stack<Operation> undoStack = new Stack<>();
+    private final Stack<Operation> redoStack = new Stack<>();
 
     @FXML
     public void initialize() { //fills in blank canvas and intializes JavaFX UI
@@ -118,7 +121,13 @@ public class PixelController {
     }
 
     private void applyOperation(Operation op, boolean fromNetwork) {
+        //local / offline
         if(!fromNetwork) {
+            if(!fromNetwork && op.type == null) {
+                undoStack.push(op);
+                redoStack.clear();
+            }
+
             if (this.client != null) { // client forwards operations to be processed by server
                 this.client.sendOperation(op);
             }
@@ -165,19 +174,54 @@ public class PixelController {
     //stacks handled with server mutex
     @FXML
     public void selectUndo() {
+
         if(client != null) {
             client.sendOperation(new Operation(Mode.Undo));
-        } else if(server != null){
+            return;
+        }
+
+        if(server != null) {
             server.processOperation(new Operation(Mode.Undo), null);
+            return;
+        }
+
+        // local / offline stack
+        if(!undoStack.isEmpty()) {
+            Operation op = undoStack.pop();
+
+            Operation reverse = new Operation(
+                    op.row,
+                    op.col,
+                    op.getNext(),
+                    op.getPrevious()
+            );
+
+            redoStack.push(op);
+
+            applyOperation(reverse, true);
         }
     }
 
     @FXML
     public void selectRedo() {
+
         if(client != null) {
             client.sendOperation(new Operation(Mode.Redo));
-        } else if(server != null){
+            return;
+        }
+
+        if(server != null) {
             server.processOperation(new Operation(Mode.Redo), null);
+            return;
+        }
+
+        //local / offline stack
+        if(!redoStack.isEmpty()) {
+            Operation op = redoStack.pop();
+
+            undoStack.push(op);
+
+            applyOperation(op, true);
         }
     }
 
@@ -422,31 +466,42 @@ public class PixelController {
             currentFile = file;
         }
     }
-    @FXML
-    public void hostServer() throws BindException, IOException {
-        System.out.println("Hosting Server...");
-        this.server = new Server(8080);
-        this.server.setUiUpdateCallback(op -> {
-            Platform.runLater(() -> setPixel(op.row, op.col, op.getNext()));
-        });
-        this.server.start();
-        this.server.initServerCanvas(canvasData, ROWS, COLS);
+
+
+    public void startHosting() {
+        try {
+            this.server = new Server(8080);
+
+            this.server.setUiUpdateCallback(op -> {
+                Platform.runLater(() -> {
+                    if (pixels == null) return;
+                    setPixel(op.row, op.col, op.getNext());
+                });
+            });
+
+            this.server.start();
+            this.server.initServerCanvas(canvasData, ROWS, COLS);
+
+            System.out.println("Hosting on port 8080");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    @FXML
-    public void joinServer() {
+
+    public void connectToServer(String ip) {
         new Thread(() -> {
             try {
-                System.out.println("Joining Server...");
-                client = new Client("127.0.0.1", 8080);
+                System.out.println("Joining Server at IP: " + ip);
+                client = new Client(ip, 8080);
 
-                // sync states with current server canvas
                 Color[][] initial = client.loadServerCanvas();
-                if(initial != null){
+                if (initial != null) {
                     Platform.runLater(() -> loadNewCanvas(initial));
                 }
-                //listens for incoming operations on background thread
-                this.client.listenForOperation((op) -> {
+
+                client.listenForOperation(op -> {
                     Platform.runLater(() -> applyOperation(op, true));
                 });
 

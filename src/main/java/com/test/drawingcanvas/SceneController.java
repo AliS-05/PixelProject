@@ -16,8 +16,15 @@ public class SceneController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(file));
             Parent root = loader.load();
 
+            Scene scene = new Scene(root);
+
+            scene.getStylesheets().add(
+                    getClass().getResource("/com/test/drawingcanvas/theme.css").toExternalForm()
+            );
+
             Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(scene);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -27,8 +34,10 @@ public class SceneController {
     public void goToSettings(ActionEvent e) { switchScene(e, "settings.fxml"); }
     public void goToJoin(ActionEvent e) { switchScene(e, "join.fxml"); }
     public void goToTitle(ActionEvent e) { switchScene(e, "title.fxml"); }
+
     public void toggleDarkMode(ActionEvent e) {}
     public void toggleGrid(ActionEvent e) {}
+
     public void exitApp(ActionEvent e) {
         Platform.exit();
     }
@@ -51,8 +60,13 @@ public class SceneController {
             PixelController controller = loader.getController();
             controller.connectToServer(ip);
 
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    getClass().getResource("/com/test/drawingcanvas/theme.css").toExternalForm()
+            );
+
             Stage stage = (Stage)((Node)e.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(scene);
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -65,10 +79,15 @@ public class SceneController {
             Parent root = loader.load();
 
             PixelController controller = loader.getController();
-            controller.startHosting(); // no IP needed or you pass it if you want
+            controller.startHosting();
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    getClass().getResource("/com/test/drawingcanvas/theme.css").toExternalForm()
+            );
 
             Stage stage = (Stage)((Node)e.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(scene);
 
         } catch (Exception ex) {
             ex.printStackTrace();

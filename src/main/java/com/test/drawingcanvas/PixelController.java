@@ -40,14 +40,14 @@ public class PixelController {
     private final Stack<Operation> redoStack = new Stack<>();
 
     @FXML
-    public void initialize() { // fills in blank canvas and intializes JavaFX UI
+    public void initialize() { //fills in blank canvas and intializes JavaFX UI
         for (int r = 0; r < ROWS; r++)
             for (int c = 0; c < COLS; c++)
                 canvasData[r][c] = Color.WHITE;
 
         pixels = new Rectangle[ROWS][COLS];
         gridLines = new Rectangle[ROWS][COLS];
-        // making rectangles proportional to window size
+        //making rectangles proportional to window size
         grid.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         grid.setSnapToPixel(true);
         grid.getColumnConstraints().clear();
@@ -109,23 +109,21 @@ public class PixelController {
             }
         }
     }
-
-    // this is how the canvas gets updated
+    //this is how the canvas gets updated
     private void applyTool(int row, int col) {
         Color previous = canvasData[row][col];
         Color next = curMode == Mode.Eraser ? Color.WHITE : curColor;
 
-        if (previous.equals(next))
-            return;
+        if (previous.equals(next)) return;
 
         Operation op = new Operation(row, col, previous, next);
         applyOperation(op, false);
     }
 
     private void applyOperation(Operation op, boolean fromNetwork) {
-        // local / offline
-        if (!fromNetwork) {
-            if (!fromNetwork && op.type == null) {
+        //local / offline
+        if(!fromNetwork) {
+            if(!fromNetwork && op.type == null) {
                 undoStack.push(op);
                 redoStack.clear();
             }
@@ -133,12 +131,12 @@ public class PixelController {
             if (this.client != null) { // client forwards operations to be processed by server
                 this.client.sendOperation(op);
             }
-            if (this.server != null) { // server processors all operations, even its own
+            if (this.server != null) { //server processors all operations, even its own
                 this.server.processOperation(op, null);
             }
         }
 
-        if (op.type == null) { // optimistically apply every operation no matter what to the UI
+        if(op.type == null){ //optimistically apply every operation no matter what to the UI
             Platform.runLater(() -> setPixel(op.row, op.col, op.getNext()));
         }
     }
@@ -147,6 +145,7 @@ public class PixelController {
         canvasData[row][col] = color;
         pixels[row][col].setFill(color);
     }
+
 
     @FXML
     public void selectPencil() {
@@ -172,29 +171,30 @@ public class PixelController {
             }
     }
 
-    // stacks handled with server mutex
+    //stacks handled with server mutex
     @FXML
     public void selectUndo() {
 
-        if (client != null) {
+        if(client != null) {
             client.sendOperation(new Operation(Mode.Undo));
             return;
         }
 
-        if (server != null) {
+        if(server != null) {
             server.processOperation(new Operation(Mode.Undo), null);
             return;
         }
 
         // local / offline stack
-        if (!undoStack.isEmpty()) {
+        if(!undoStack.isEmpty()) {
             Operation op = undoStack.pop();
 
             Operation reverse = new Operation(
                     op.row,
                     op.col,
                     op.getNext(),
-                    op.getPrevious());
+                    op.getPrevious()
+            );
 
             redoStack.push(op);
 
@@ -205,18 +205,18 @@ public class PixelController {
     @FXML
     public void selectRedo() {
 
-        if (client != null) {
+        if(client != null) {
             client.sendOperation(new Operation(Mode.Redo));
             return;
         }
 
-        if (server != null) {
+        if(server != null) {
             server.processOperation(new Operation(Mode.Redo), null);
             return;
         }
 
-        // local / offline stack
-        if (!redoStack.isEmpty()) {
+        //local / offline stack
+        if(!redoStack.isEmpty()) {
             Operation op = redoStack.pop();
 
             undoStack.push(op);
@@ -232,12 +232,10 @@ public class PixelController {
         dialog.setContentText("Size:");
 
         Optional<String> result = dialog.showAndWait();
-        if (result.isEmpty())
-            return;
+        if (result.isEmpty()) return;
 
         String input = result.get().toLowerCase().replace(" ", "");
-        if (!input.contains("x"))
-            return;
+        if (!input.contains("x")) return;
 
         String[] parts = input.split("x");
         int newRows = Integer.parseInt(parts[0]);
@@ -245,7 +243,6 @@ public class PixelController {
 
         applyGridResize(newRows, newCols);
     }
-
     private void applyGridResize(int newRows, int newCols) {
 
         Color[][] newCanvas = new Color[newRows][newCols];
@@ -277,7 +274,7 @@ public class PixelController {
         grid.getColumnConstraints().clear();
         grid.getRowConstraints().clear();
 
-        createGrid(); // this is the method we will add next
+        createGrid();  // this is the method we will add next
     }
 
     private void createGrid() {
@@ -308,7 +305,7 @@ public class PixelController {
                 cell.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
                 Rectangle rect = new Rectangle();
-                rect.setFill(canvasData[row][col]); // restore pixel color
+                rect.setFill(canvasData[row][col]);  // restore pixel color
                 rect.setStroke(Color.LIGHTGRAY);
                 rect.setStrokeType(StrokeType.INSIDE);
                 rect.setStrokeWidth(1);
@@ -343,54 +340,33 @@ public class PixelController {
 
     public void loadNewCanvas(Color[][] newData) {
 
-        // 1. Find bounding box of loaded image
-        javafx.scene.shape.Rectangle box = findBoundingBoxLoaded(newData);
-
-        if (box == null) {
-            // nothing to draw, clear canvas
-            for (int r = 0; r < ROWS; r++)
-                for (int c = 0; c < COLS; c++)
-                    applyOperation(new Operation(r, c, canvasData[r][c], Color.WHITE), false);
-            return;
-        }
-
-        // 2. Crop to actual content
-        Color[][] cropped = cropGrid(newData, box);
-
-        // 3. Compute centering offset
-        int[] offset = computeCenterOffset(cropped);
-        int offsetR = offset[0];
-        int offsetC = offset[1];
-
-        // 4. Clear current canvas
+        // Clear canvas to transparent
         for (int r = 0; r < ROWS; r++) {
             for (int c = 0; c < COLS; c++) {
-                applyOperation(new Operation(r, c, canvasData[r][c], Color.WHITE), false);
+                applyOperation(new Operation(r, c, canvasData[r][c], new Color(1,1,1,1)), false);
             }
         }
 
-        // 5. Paste centered image
-        for (int r = 0; r < cropped.length; r++) {
-            for (int c = 0; c < cropped[0].length; c++) {
+        // Paste pixels exactly where they belong
+        for (int r = 0; r < newData.length; r++) {
+            for (int c = 0; c < newData[0].length; c++) {
 
-                Color color = cropped[r][c];
-                if (color.getOpacity() == 0)
-                    continue;
+                Color color = newData[r][c];
 
-                int targetR = r + offsetR;
-                int targetC = c + offsetC;
-
-                if (targetR >= 0 && targetR < ROWS &&
-                        targetC >= 0 && targetC < COLS) {
-
-                    applyOperation(new Operation(
-                            targetR, targetC,
-                            canvasData[targetR][targetC],
-                            color), false);
+                if (color.getOpacity() > 0) {   // only draw visible pixels
+                    if (r < ROWS && c < COLS) {
+                        applyOperation(new Operation(
+                            r, c,
+                            canvasData[r][c],
+                            color
+                        ), false);
+                    }
                 }
             }
         }
     }
+
+
 
     // File Chooser
 
@@ -398,7 +374,8 @@ public class PixelController {
         FileChooser chooser = new FileChooser();
         chooser.setTitle(title);
         chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Pixel Bitmap (*.pxbmp)", "*.pxbmp"));
+                new FileChooser.ExtensionFilter("Pixel Bitmap (*.pxbmp)", "*.pxbmp")
+        );
         return chooser;
     }
 
@@ -411,21 +388,16 @@ public class PixelController {
         for (int r = 0; r < ROWS; r++) {
             for (int c = 0; c < COLS; c++) {
                 if (!grid[r][c].equals(Color.WHITE)) {
-                    if (r < minR)
-                        minR = r;
-                    if (r > maxR)
-                        maxR = r; // ⭐ FIXED
-                    if (c < minC)
-                        minC = c;
-                    if (c > maxC)
-                        maxC = c;
+                    if (r < minR) minR = r;
+                    if (r > maxR) maxR = r;   // ⭐ FIXED
+                    if (c < minC) minC = c;
+                    if (c > maxC) maxC = c;
                     System.out.println("minR=" + minR + " maxR=" + maxR + " minC=" + minC + " maxC=" + maxC);
                 }
             }
         }
 
-        if (maxR == -1)
-            return null; // no pixels
+        if (maxR == -1) return null; // no pixels
 
         return new Rectangle(minC, minR, (maxC - minC + 1), (maxR - minR + 1));
     }
@@ -473,7 +445,7 @@ public class PixelController {
         Color[][] dataToSave;
 
         if (box == null) {
-            dataToSave = new Color[][] { { Color.WHITE } };
+            dataToSave = new Color[][]{{Color.WHITE}};
         } else {
             dataToSave = cropGrid(canvasData, box);
         }
@@ -495,52 +467,6 @@ public class PixelController {
         }
     }
 
-    private javafx.scene.shape.Rectangle findBoundingBoxLoaded(Color[][] grid) {
-        int rows = grid.length;
-        int cols = grid[0].length;
-
-        int minR = rows, maxR = -1;
-        int minC = cols, maxC = -1;
-
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                if (!grid[r][c].equals(Color.WHITE)) {
-                    if (r < minR)
-                        minR = r;
-                    if (r > maxR)
-                        maxR = r;
-                    if (c < minC)
-                        minC = c;
-                    if (c > maxC)
-                        maxC = c;
-                }
-            }
-        }
-
-        if (maxR == -1)
-            return null; // no pixels
-
-        return new javafx.scene.shape.Rectangle(
-                minC, minR,
-                (maxC - minC + 1),
-                (maxR - minR + 1));
-    }
-
-    private int[] computeCenterOffset(Color[][] cropped) {
-        int h = cropped.length;
-        int w = cropped[0].length;
-
-        int gridCenterR = ROWS / 2;
-        int gridCenterC = COLS / 2;
-
-        int imgCenterR = h / 2;
-        int imgCenterC = w / 2;
-
-        int offsetR = gridCenterR - imgCenterR;
-        int offsetC = gridCenterC - imgCenterC;
-
-        return new int[] { offsetR, offsetC };
-    }
 
     public void startHosting() {
         try {
@@ -548,8 +474,7 @@ public class PixelController {
 
             this.server.setUiUpdateCallback(op -> {
                 Platform.runLater(() -> {
-                    if (pixels == null)
-                        return;
+                    if (pixels == null) return;
                     setPixel(op.row, op.col, op.getNext());
                 });
             });
@@ -563,6 +488,7 @@ public class PixelController {
             e.printStackTrace();
         }
     }
+
 
     public void connectToServer(String ip) {
         new Thread(() -> {
@@ -584,7 +510,6 @@ public class PixelController {
             }
         }).start();
     }
-
     @FXML
     public void toggleGridVisibility() {
         showGrid = !showGrid;
@@ -597,9 +522,10 @@ public class PixelController {
     }
 
     @FXML
-    public void goToSettings(ActionEvent e) {
+    public void goToSettings(ActionEvent e){
         new SceneController().goToSettings(e);
     }
+
 
     @FXML
     public void goToTitle(ActionEvent e) {
